@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageSequence
 import cv2
 import base64
 import requests
@@ -32,14 +32,17 @@ class app:
 
         self.window.configure(bg="white")
 
-        # Start Page - 비디오 로드 및 재생
-        self.cap = cv2.VideoCapture('./static/main.mp4')  # 비디오 파일 경로를 실제 경로로 변경해야 합니다.
-        self.delay = int(1000 / self.cap.get(cv2.CAP_PROP_FPS))  # 프레임 재생 간격 계산
+        # Start Page
+        self.frameView = tk.Frame(self.window, bg="white")
+        self.frameView.place(
+            x=self.positionRight, y=self.positionDown, anchor=tk.CENTER
+        )
+        self.gif = Image.open('./static/main.gif')  # GIF 파일 경로를 실제 경로로 변경해야 합니다.
 
-        self.startPage = tk.Label(self.window)  # frameView 대신 window에 직접 추가
+        self.startPage = tk.Label(self.frameView)
         self.startPage.pack(pady=100)
 
-        self.playVideo()  # 비디오 재생 시작
+        self.playGif()
 
         self.window.bind("<Button-1>", self.selectFrame)
 
@@ -47,29 +50,25 @@ class app:
         self.window.bind("q", lambda e: self.window.destroy())
         self.window.mainloop()
 
-    def playVideo(self):
-        ret, frame = self.cap.read()
-        if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            frame = Image.fromarray(frame)
-            frame = frame.resize((1920, 1080), Image.LANCZOS)
-            frame_photo = ImageTk.PhotoImage(image=frame)
+    def playGif(self):
+        for image in ImageSequence.Iterator(self.gif):
+            frame_photo = ImageTk.PhotoImage(image)
             self.startPage.config(image=frame_photo)
             self.startPage.image = frame_photo
-            self.window.after(self.delay, self.playVideo)
-        else:  # 비디오 끝에 도달하면 처음부터 다시 시작
-            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
-            self.window.after(self.delay, self.playVideo)
+            self.playGif_id = self.window.after(self.gif.info['duration'], self.playGif) 
+            break 
 
     def blank(self, event):
         pass
 
     def selectFrame(self, event):
-        self.cap.release()  # 비디오 재생 중지
+        self.startPage.after_cancel(self.playGif_id)  # GIF 재생 중지
         self.startPage.destroy()
         self.window.bind("<Button-1>", self.blank)
         self.framePage = tk.Frame(self.window, bg="white")
         self.framePage.pack(expand=True)
+
+        # ... (나머지 코드) ...
 
         # Load frames
         self.frameCount = len([s for s in os.listdir("./frames") if s.endswith(".png")])
@@ -101,7 +100,7 @@ class app:
 
         self.readyPageTitle = tk.Label(
             self.readyPage,
-            text="카메라 준비 중...",
+            text="준비 중...",
             font=("Arial", 100),
             fg="black",
             bg="white",
