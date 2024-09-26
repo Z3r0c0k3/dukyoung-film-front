@@ -39,7 +39,7 @@ class app:
         self.startPage = tk.Label(self.window)  # frameView 대신 window에 직접 추가
         self.startPage.pack(pady=100)
 
-        self.lbl1 = tk.Label(tk.Frame(self.window), bg="white")
+        self.lbl1 = tk.Label(tk.Frame(self.window), bg="white", width=1920, height=1080)
         self.lbl1.grid()
 
         self.playVideo()  # 비디오 재생 시작
@@ -231,6 +231,7 @@ class app:
             print(f"Processing failed!\n{e}")
             self.processPageTitle.configure(text="처리 실패!\n관리자에게 문의해주세요!")
             self.window.after(10000, self.restart)
+            return
 
         self.processPageTitle.configure(text="사진이 준비되었습니다!")
         self.window.after(2000, self.showImage)
