@@ -37,10 +37,7 @@ class app:
         self.delay = int(1000 / self.cap.get(cv2.CAP_PROP_FPS))  # 프레임 재생 간격 계산
 
         self.startPage = tk.Label(self.window)  # frameView 대신 window에 직접 추가
-        self.startPage.pack(pady=100)
-
-        self.lbl1 = tk.Label(tk.Frame(self.window), bg="white", width=1920, height=1080)
-        self.lbl1.grid()
+        self.startPage.pack(pady=0)
 
         self.playVideo()  # 비디오 재생 시작
 
@@ -51,17 +48,18 @@ class app:
         self.window.mainloop()
 
     def playVideo(self):
-        ret, frame = self.cap.read() # 프레임이 올바르게 읽히면 ret은 True
-        if not ret:
-            self.cap.release() # 작업 완료 후 해제
-            return
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        img = Image.fromarray(frame) # Image 객체로 변환
-        imgtk = ImageTk.PhotoImage(image=img) # ImageTk 객체로 변환
-        # OpenCV 동영상
-        self.lbl1.imgtk = imgtk
-        self.lbl1.configure(image=imgtk)
-        self.lbl1.after(10, self.playVideo)
+        ret, frame = self.cap.read()
+        if ret:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            frame = Image.fromarray(frame)
+            #frame = frame.resize((1920, 1080), Image.LANCZOS)
+            frame_photo = ImageTk.PhotoImage(image=frame)
+            self.startPage.config(image=frame_photo)
+            self.startPage.image = frame_photo
+            self.window.after(self.delay, self.playVideo)
+        else:  # 비디오 끝에 도달하면 처음부터 다시 시작
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            self.window.after(self.delay, self.playVideo)
 
     def blank(self, event):
         pass
@@ -231,7 +229,6 @@ class app:
             print(f"Processing failed!\n{e}")
             self.processPageTitle.configure(text="처리 실패!\n관리자에게 문의해주세요!")
             self.window.after(10000, self.restart)
-            return
 
         self.processPageTitle.configure(text="사진이 준비되었습니다!")
         self.window.after(2000, self.showImage)
