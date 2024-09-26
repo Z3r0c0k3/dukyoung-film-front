@@ -14,7 +14,6 @@ load_dotenv()
 
 PROCESSING_URL = os.getenv("PROCESSING_URL")
 
-
 class app:
     def __init__(self):
         self.defaultTimer = 8
@@ -44,16 +43,6 @@ class app:
         self.startPage.pack(pady=100)
 
         self.playGif()
-        # GIF를 불러오는 방식으로 변경
-        # mainImage = Image.open("./static/main.png")
-        # mainImage = mainImage.resize((1920, 1080), Image.LANCZOS)
-        # mainImage = ImageTk.PhotoImage(mainImage)
-
-        # self.startPage = tk.Label(
-        #     self.frameView,
-        #     image=mainImage,
-        # )
-        # self.startPage.pack(pady=100)
 
         self.window.bind("<Button-1>", self.selectFrame)
 
@@ -66,8 +55,8 @@ class app:
             frame_photo = ImageTk.PhotoImage(image)
             self.startPage.config(image=frame_photo)
             self.startPage.image = frame_photo
-            self.window.after(self.gif.info['duration'], self.playGif)  # 다음 프레임 재생 예약
-            break
+            self.playGif_id = self.window.after(self.gif.info['duration'], self.playGif) 
+            break 
 
     def blank(self, event):
         pass
@@ -78,6 +67,8 @@ class app:
         self.window.bind("<Button-1>", self.blank)
         self.framePage = tk.Frame(self.window, bg="white")
         self.framePage.pack(expand=True)
+
+        # ... (나머지 코드) ...
 
         # Load frames
         self.frameCount = len([s for s in os.listdir("./frames") if s.endswith(".png")])
