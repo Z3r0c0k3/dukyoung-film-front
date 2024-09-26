@@ -1,5 +1,5 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageSequence
 import cv2
 import base64
 import requests
@@ -9,6 +9,7 @@ import json
 from io import BytesIO
 import platform
 from playsound import playsound
+import imageio
 
 load_dotenv()
 
@@ -38,16 +39,22 @@ class app:
         self.frameView.place(
             x=self.positionRight, y=self.positionDown, anchor=tk.CENTER
         )
+        self.gif = Image.open('./static/main.gif')  # GIF 파일 경로를 실제 경로로 변경해야 합니다.
 
-        mainImage = Image.open("./static/main.png")
-        mainImage = mainImage.resize((1920, 1080), Image.LANCZOS)
-        mainImage = ImageTk.PhotoImage(mainImage)
-
-        self.startPage = tk.Label(
-            self.frameView,
-            image=mainImage,
-        )
+        self.startPage = tk.Label(self.frameView)
         self.startPage.pack(pady=100)
+
+        self.playGif()
+        # GIF를 불러오는 방식으로 변경
+        # mainImage = Image.open("./static/main.png")
+        # mainImage = mainImage.resize((1920, 1080), Image.LANCZOS)
+        # mainImage = ImageTk.PhotoImage(mainImage)
+
+        # self.startPage = tk.Label(
+        #     self.frameView,
+        #     image=mainImage,
+        # )
+        # self.startPage.pack(pady=100)
 
         self.window.bind("<Button-1>", self.selectFrame)
 
@@ -55,10 +62,19 @@ class app:
         self.window.bind("q", lambda e: self.window.destroy())
         self.window.mainloop()
 
+    def playGif(self):
+        for image in ImageSequence.Iterator(self.gif):
+            frame_photo = ImageTk.PhotoImage(image)
+            self.startPage.config(image=frame_photo)
+            self.startPage.image = frame_photo
+            self.window.after(self.gif.info['duration'], self.playGif)  # 다음 프레임 재생 예약
+            break
+
     def blank(self, event):
         pass
 
     def selectFrame(self, event):
+        self.startPage.after_cancel(self.playGif_id)  # GIF 재생 중지
         self.startPage.destroy()
         self.window.bind("<Button-1>", self.blank)
         self.framePage = tk.Frame(self.window, bg="white")
@@ -201,7 +217,7 @@ class app:
 
         self.processPageTitle = tk.Label(
             self.processPage,
-            text="처리 중...",
+            text="사진을 만들고 있어요...",
             font=("Arial", 100),
             fg="black",
             bg="white",
@@ -220,10 +236,10 @@ class app:
             self.req = json.loads(self.req.text)
         except Exception as e:
             print(f"Processing failed!\n{e}")
-            self.processPageTitle.configure(text="처리 실패!")
-            return
+            self.processPageTitle.configure(text="처리 실패!\n관리자에게 문의해주세요!")
+            self.window.after(10000, self.restart)
 
-        self.processPageTitle.configure(text="처리 완료!")
+        self.processPageTitle.configure(text="사진이 준비되었습니다!")
         self.window.after(2000, self.showImage)
 
     def showImage(self):
