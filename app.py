@@ -9,7 +9,6 @@ import json
 from io import BytesIO
 import platform
 from playsound import playsound
-import imageio
 
 load_dotenv()
 
