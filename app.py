@@ -52,12 +52,33 @@ class app:
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             frame = Image.fromarray(frame)
-            frame = frame.resize((1920, 1080), Image.LANCZOS)
+    
+            # 원본 비디오의 크기 가져오기
+            original_width = frame.width
+            original_height = frame.height
+    
+            # 화면 비율과 비디오 비율 계산
+            screen_ratio = 1920 / 1080
+            video_ratio = original_width / original_height
+    
+            # 비디오 비율에 맞춰 크기 조정
+            if video_ratio > screen_ratio:
+                # 비디오가 더 넓은 경우: 너비를 1920에 맞추고 높이 계산
+                new_width = 1920
+                new_height = int(new_width / video_ratio)
+            else:
+                # 비디오가 더 높거나 같은 경우: 높이를 1080에 맞추고 너비 계산
+                new_height = 1080
+                new_width = int(new_height * video_ratio)
+    
+            frame = frame.resize((new_width, new_height), Image.LANCZOS)
+    
+            # 1920x1080 프레임 중앙에 배치
             frame_photo = ImageTk.PhotoImage(image=frame)
             self.startPage.config(image=frame_photo)
             self.startPage.image = frame_photo
             self.window.after(self.delay, self.playVideo)
-        else:  # 비디오 끝에 도달하면 처음부터 다시 시작
+        else:
             self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
             self.window.after(self.delay, self.playVideo)
 
