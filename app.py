@@ -39,6 +39,9 @@ class app:
         self.startPage = tk.Label(self.window)  # frameView 대신 window에 직접 추가
         self.startPage.pack(pady=100)
 
+        self.lbl1 = tk.Label(tk.Frame(self.window), bg="white")
+        self.lbl1.grid()
+
         self.playVideo()  # 비디오 재생 시작
 
         self.window.bind("<Button-1>", self.selectFrame)
@@ -47,7 +50,7 @@ class app:
         self.window.bind("q", lambda e: self.window.destroy())
         self.window.mainloop()
 
-    def video_play(self):
+    def playVideo(self):
         ret, frame = self.cap.read() # 프레임이 올바르게 읽히면 ret은 True
         if not ret:
             self.cap.release() # 작업 완료 후 해제
@@ -58,7 +61,7 @@ class app:
         # OpenCV 동영상
         self.lbl1.imgtk = imgtk
         self.lbl1.configure(image=imgtk)
-        self.lbl1.after(10, self.video_play)
+        self.lbl1.after(10, self.playVideo)
 
     def blank(self, event):
         pass
